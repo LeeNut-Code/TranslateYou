@@ -25,6 +25,10 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:3.0.0")
     // retrofit:3.0.0 based on okhttp3:4.12.0
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 mavenPublishing {

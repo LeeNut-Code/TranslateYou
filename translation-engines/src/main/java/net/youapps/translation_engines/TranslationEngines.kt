@@ -36,6 +36,7 @@ import net.youapps.translation_engines.po.PonsEngine
 import net.youapps.translation_engines.st.STEngine
 import net.youapps.translation_engines.wm.WmEngine
 import net.youapps.translation_engines.ya.YandexEngine
+import net.youapps.translation_engines.llm.LlmEngine
 
 object TranslationEngines {
     fun getAllEngines(settingsProvider: EngineSettingsProvider) = listOf(
@@ -58,5 +59,6 @@ object TranslationEngines {
         IcibaEngine(settingsProvider),
         BingEngine(settingsProvider),
         PapagoEngine(settingsProvider),
+        LlmEngine(settingsProvider),
     )
 }

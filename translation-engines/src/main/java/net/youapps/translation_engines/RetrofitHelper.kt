@@ -28,10 +28,17 @@ object RetrofitHelper {
     val contentType = "application/json".toMediaTypeOrNull()!!
 
     inline fun <reified T> createInstance(baseUrl: String): T {
+        return createInstance(baseUrl, HttpLoggingInterceptor.Level.BODY)
+    }
+
+    inline fun <reified T> createInstance(
+        baseUrl: String,
+        logLevel: HttpLoggingInterceptor.Level
+    ): T {
         val httpClient = OkHttpClient.Builder()
 
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = logLevel
         }
         httpClient.addInterceptor(logging) // <-- this is the important line!
 

@@ -42,6 +42,7 @@
     <string name="additional_info_summary">Show additional translation information if available.</string>
     <string name="translation_engine">Translation engine</string>
     <string name="translation_api">Translation API</string>
+    <string name="model_id">Model ID</string>
     <string name="selected_engine">Selected engine</string>
     <string name="st_selected_engine">Engine that the selected server uses for translating</string>
     <string name="translation">Translation</string>

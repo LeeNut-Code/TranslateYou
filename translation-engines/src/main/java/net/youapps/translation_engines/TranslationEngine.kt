@@ -40,7 +40,7 @@ interface EngineSettingsProvider {
 
     /**
      * Get the selected model of the engine.
-     * Must be one of [TranslationEngine.supportedModels].
+     * Must be one of [TranslationEngine.supportedModels] unless [supportsCustomModelId] is true.
      *
      * This is only relevant if [TranslationEngine.supportedModels] is not empty.
      */
@@ -83,6 +83,12 @@ abstract class TranslationEngine(private val settingsProvider: EngineSettingsPro
      * Supported translation models by this engine.
      */
     open val supportedModels: List<String> = listOf()
+
+    /**
+     * Whether the engine accepts an arbitrary user-provided model ID instead of being limited to
+     * [supportedModels]. When true, the settings UI shows a free-text model ID field.
+     */
+    open val supportsCustomModelId: Boolean = false
 
     /**
      * Initialize the translation engine using the API url provided by [settingsProvider] using [EngineSettingsProvider.getApiUrl].

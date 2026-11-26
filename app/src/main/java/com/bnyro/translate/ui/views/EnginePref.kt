@@ -87,6 +87,10 @@ fun EnginePref() {
             mutableStateOf(engine.getApiKey())
         }
 
+        var modelId by remember {
+            mutableStateOf(engine.getSelectedModel().orEmpty())
+        }
+
         DisposableEffect(Unit) {
             onDispose {
                 // when the screen is closed, automatically refresh the engine if it was modified
@@ -139,6 +143,22 @@ fun EnginePref() {
                 }
 
                 when {
+                    engine.supportsCustomModelId -> {
+                        Spacer(
+                            modifier = Modifier
+                                .height(10.dp)
+                        )
+
+                        EditTextPreference(
+                            preferenceKey = Preferences.selectedModelPrefKey(engine),
+                            value = modelId,
+                            labelText = stringResource(R.string.model_id)
+                        ) {
+                            modelId = it
+                            engineModified = true
+                        }
+                    }
+
                     engine.supportedModels.isNotEmpty() -> {
                         var showEngineSelDialog by remember {
                             mutableStateOf(false)
