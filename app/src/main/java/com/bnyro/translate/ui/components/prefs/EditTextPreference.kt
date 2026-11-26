@@ -19,11 +19,25 @@ package com.bnyro.translate.ui.components.prefs
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import com.bnyro.translate.R
 import com.bnyro.translate.util.Preferences
 
 @Composable
@@ -32,8 +46,37 @@ fun EditTextPreference(
     preferenceKey: String,
     value: String,
     labelText: String,
-    onValueChange: (String) -> Unit = {}
+    onValueChange: (String) -> Unit = {},
+    isSecret: Boolean = false
 ) {
+    val context = LocalContext.current
+    var showPassword by remember { mutableStateOf(false) }
+
+    val visualTransformation: VisualTransformation = if (isSecret && !showPassword) {
+        PasswordVisualTransformation()
+    } else {
+        VisualTransformation.None
+    }
+
+    val trailingIcon: (@Composable () -> Unit)? = if (isSecret) {
+        {
+            IconButton(onClick = { showPassword = !showPassword }) {
+                Icon(
+                    imageVector = if (showPassword) {
+                        Icons.Default.VisibilityOff
+                    } else {
+                        Icons.Default.Visibility
+                    },
+                    contentDescription = context.getString(
+                        if (showPassword) R.string.hide_key else R.string.show_key
+                    )
+                )
+            }
+        }
+    } else {
+        null
+    }
+
     OutlinedTextField(
         value = value,
         onValueChange = {
@@ -47,7 +90,12 @@ fun EditTextPreference(
             )
         },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Done,
+            keyboardType = if (isSecret) KeyboardType.Password else KeyboardType.Unspecified
+        ),
+        visualTransformation = visualTransformation,
+        trailingIcon = trailingIcon,
         modifier = modifier
             .fillMaxWidth()
     )

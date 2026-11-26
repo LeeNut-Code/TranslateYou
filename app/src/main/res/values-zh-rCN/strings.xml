@@ -96,4 +96,7 @@
     <string name="failed_to_initialize_engine">无法初始化 %1$s 引擎：%2$s</string>
     <string name="export_to_text_file">导出到文本文件</string>
     <string name="successfully_exported">导出成功！</string>
+
+    <string name="show_key">显示密钥</string>
+    <string name="hide_key">隐藏密钥</string>
 </resources>

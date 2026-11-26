@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.bnyro.translate.db.obj.DbLanguage
+import com.bnyro.translate.util.LanguageNames
 import net.youapps.translation_engines.Language
 
 @Composable
@@ -46,7 +47,8 @@ fun LanguageItem(
     isPinned: Boolean?,
     selectedLanguage: Language,
     onPinnedChange: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    appLanguage: String? = null
 ) {
     val isSelected = language == selectedLanguage
 
@@ -68,7 +70,7 @@ fun LanguageItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = language.name,
+                text = LanguageNames.displayName(language.code, appLanguage, language.name),
                 modifier = Modifier
                     .weight(1f)
                     .padding(vertical = 10.dp, horizontal = 15.dp)

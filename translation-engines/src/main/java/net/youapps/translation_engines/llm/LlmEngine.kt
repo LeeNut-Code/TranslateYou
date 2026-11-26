@@ -30,6 +30,7 @@ import net.youapps.translation_engines.llm.obj.TranslationPrompt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
 
 /**
  * Generic OpenAI Chat Completions compatible translation engine.
@@ -37,7 +38,10 @@ import okhttp3.logging.HttpLoggingInterceptor
  * Not bound to any single provider (DeepSeek, OpenAI, Ollama, OpenRouter, ...).
  * Users configure Base URL, optional API Key and a free-form Model ID.
  */
-class LlmEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(settingsProvider) {
+class LlmEngine(
+    settingsProvider: EngineSettingsProvider,
+    private val readTimeoutSeconds: Long = 300
+) : TranslationEngine(settingsProvider) {
     override val name = "LLM (OpenAI-compatible)"
     override val defaultUrl = "https://api.openai.com/v1/"
     override val urlModifiable = true
@@ -50,7 +54,16 @@ class LlmEngine(settingsProvider: EngineSettingsProvider) : TranslationEngine(se
 
     override fun createOrRecreate(): TranslationEngine = apply {
         // LLM requests carry user text and the Authorization key, so logging must be disabled.
-        api = RetrofitHelper.createInstance(baseUrl = getUrl(), logLevel = HttpLoggingInterceptor.Level.NONE)
+        // Use wide timeouts for long-text generation; connect/read/write defaults are 10s,
+        // which is too short for LLM responses.
+        api = RetrofitHelper.createInstance(
+            baseUrl = getUrl(),
+            logLevel = HttpLoggingInterceptor.Level.NONE,
+            connectTimeout = 30,
+            readTimeout = readTimeoutSeconds,
+            writeTimeout = 60,
+            timeUnit = TimeUnit.SECONDS
+        )
     }
 
     override suspend fun getLanguages(): List<Language> {

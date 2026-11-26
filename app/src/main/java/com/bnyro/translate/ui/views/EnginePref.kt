@@ -135,7 +135,8 @@ fun EnginePref() {
                             ApiKeyState.REQUIRED -> " (${stringResource(R.string.required)})"
                             ApiKeyState.OPTIONAL -> " (${stringResource(R.string.optional)})"
                             else -> ""
-                        }
+                        },
+                        isSecret = true
                     ) {
                         apiKey = it
                         engineModified = true

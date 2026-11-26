@@ -23,6 +23,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitHelper {
     val contentType = "application/json".toMediaTypeOrNull()!!
@@ -35,7 +36,21 @@ object RetrofitHelper {
         baseUrl: String,
         logLevel: HttpLoggingInterceptor.Level
     ): T {
+        return createInstance(baseUrl, logLevel, 10, 10, 10, TimeUnit.SECONDS)
+    }
+
+    inline fun <reified T> createInstance(
+        baseUrl: String,
+        logLevel: HttpLoggingInterceptor.Level,
+        connectTimeout: Long,
+        readTimeout: Long,
+        writeTimeout: Long,
+        timeUnit: TimeUnit
+    ): T {
         val httpClient = OkHttpClient.Builder()
+            .connectTimeout(connectTimeout, timeUnit)
+            .readTimeout(readTimeout, timeUnit)
+            .writeTimeout(writeTimeout, timeUnit)
 
         val logging = HttpLoggingInterceptor().apply {
             level = logLevel

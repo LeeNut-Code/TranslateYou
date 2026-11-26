@@ -31,8 +31,6 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +49,8 @@ import com.bnyro.translate.R
 import com.bnyro.translate.db.obj.DbLanguage
 import com.bnyro.translate.ui.dialogs.FullscreenDialog
 import com.bnyro.translate.ui.models.TranslationModel
+import com.bnyro.translate.util.LanguageNames
+import com.bnyro.translate.util.Preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.youapps.translation_engines.Language
@@ -67,6 +66,7 @@ fun LanguageSelector(
     onClick: (Language) -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val appLanguage = Preferences.get(Preferences.appLanguageKey, "")
 
     var showDialog by remember {
         mutableStateOf(false)
@@ -78,7 +78,7 @@ fun LanguageSelector(
     }
 
     val bookmarks = viewModel.bookmarkedLanguages.filter {
-        validateFilter(it, searchQuery)
+        validateFilter(it, searchQuery, appLanguage)
     }
 
     LaunchedEffect(Unit, availableLanguages) {
@@ -99,7 +99,11 @@ fun LanguageSelector(
                 modifier = Modifier
                     .basicMarquee()
                     .padding(vertical = 7.dp, horizontal = 10.dp),
-                text = selectedLanguage.name,
+                text = LanguageNames.displayName(
+                    selectedLanguage.code,
+                    appLanguage.takeIf { it.isNotEmpty() },
+                    selectedLanguage.name
+                ),
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
@@ -120,7 +124,11 @@ fun LanguageSelector(
                     showDialog = true
                 }
                 .padding(vertical = 7.dp, horizontal = 10.dp),
-            text = selectedLanguage.name,
+            text = LanguageNames.displayName(
+                (selectedLanguage).code,
+                appLanguage.takeIf { it.isNotEmpty() },
+                selectedLanguage.name
+            ),
             textAlign = TextAlign.Center,
             maxLines = 1
         )
@@ -165,7 +173,8 @@ fun LanguageSelector(
                                     onClick.invoke(autoLanguage)
                                     showDialog = false
                                 },
-                                onPinnedChange = {}
+                                onPinnedChange = {},
+                                appLanguage = appLanguage.takeIf { it.isNotEmpty() }
                             )
                         }
                     }
@@ -201,7 +210,8 @@ fun LanguageSelector(
                                 scope.launch(Dispatchers.IO) {
                                     DatabaseHolder.Db.languageBookmarksDao().delete(DbLanguage(it))
                                 }
-                            }
+                            },
+                            appLanguage = appLanguage.takeIf { it.isNotEmpty() }
                         )
                     }
 
@@ -220,7 +230,7 @@ fun LanguageSelector(
 
                     items(
                         languages.filter {
-                            validateFilter(it, searchQuery)
+                            validateFilter(it, searchQuery, appLanguage)
                         }
                     ) {
                         LanguageItem(
@@ -247,7 +257,8 @@ fun LanguageSelector(
                                         }
                                         viewModel.bookmarkedLanguages + it
                                     }
-                            }
+                            },
+                            appLanguage = appLanguage.takeIf { it.isNotEmpty() }
                         )
                     }
                 }
@@ -256,9 +267,13 @@ fun LanguageSelector(
     }
 }
 
-private fun validateFilter(language: Language, query: String): Boolean {
+private fun validateFilter(language: Language, query: String, appLanguage: String): Boolean {
     if (query.isEmpty()) return true
 
-    return language.name.lowercase().contains(query, ignoreCase = true) ||
-        language.code.lowercase().contains(query, ignoreCase = true)
+    return LanguageNames.matches(
+        code = language.code,
+        engineName = language.name,
+        appLanguage = appLanguage.takeIf { it.isNotEmpty() },
+        query = query
+    )
 }

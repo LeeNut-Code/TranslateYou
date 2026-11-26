@@ -99,4 +99,7 @@
     <string name="select_language">Please select a language for the text recognition of images in the settings.</string>
     <string name="select_theme">Select Theme</string>
     <string name="invalid_selection_area">Invalid selection area!</string>
+
+    <string name="show_key">Show key</string>
+    <string name="hide_key">Hide key</string>
 </resources>

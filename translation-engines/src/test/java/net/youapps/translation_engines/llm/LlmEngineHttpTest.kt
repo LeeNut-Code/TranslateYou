@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 import java.util.logging.Handler
 import java.util.logging.LogRecord
 import java.util.logging.Logger
@@ -168,6 +169,55 @@ class LlmEngineHttpTest {
             logger.removeHandler(handler)
             logger.level = previousLevel
             logger.useParentHandlers = previousParentHandlers
+            server.shutdown()
+        }
+    }
+
+
+    @Test
+    fun long_text_generation_succeeds_with_wide_read_timeout() {
+        val server = MockWebServer()
+        server.enqueue(
+            MockResponse()
+                .setBodyDelay(2, TimeUnit.SECONDS)
+                .setHeader("Content-Type", "application/json")
+                .setBody("""{"choices":[{"message":{"content":"{\"translation\":\"你好\"}"}}]}""")
+        )
+        server.start()
+        try {
+            val engine = LlmEngine(
+                TestSettings(server.url("/v1/").toString(), null, "model")
+            ).also { it.createOrRecreate() }
+
+            val translation = runBlocking { engine.translate("hello", null, "en") }
+            assertEquals("你好", translation.translatedText)
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    @Test
+    fun translate_times_out_when_read_timeout_is_exceeded() {
+        val server = MockWebServer()
+        server.enqueue(
+            MockResponse()
+                .setBodyDelay(2, TimeUnit.SECONDS)
+                .setHeader("Content-Type", "application/json")
+                .setBody("""{"choices":[{"message":{"content":"late"}}]}""")
+        )
+        server.start()
+        try {
+            val engine = LlmEngine(
+                TestSettings(server.url("/v1/").toString(), null, "model"),
+                readTimeoutSeconds = 1
+            ).also { it.createOrRecreate() }
+
+            val failure = runCatching {
+                runBlocking { engine.translate("hello", null, "en") }
+            }.exceptionOrNull()
+
+            assertTrue("Expected a read timeout, got: ${failure?.javaClass}", failure is java.io.IOException)
+        } finally {
             server.shutdown()
         }
     }

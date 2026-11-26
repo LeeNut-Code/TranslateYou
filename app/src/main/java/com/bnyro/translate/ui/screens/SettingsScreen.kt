@@ -63,6 +63,7 @@ import com.bnyro.translate.ui.components.prefs.SwitchPreference
 import com.bnyro.translate.ui.dialogs.EngineSelectionDialog
 import com.bnyro.translate.ui.views.EnginePref
 import com.bnyro.translate.ui.views.TessSettings
+import com.bnyro.translate.util.LanguageNames
 import com.bnyro.translate.util.LocaleHelper
 import com.bnyro.translate.util.Preferences
 
@@ -154,12 +155,19 @@ fun SettingsScreen(
                 )
 
                 val appLanguages = LocaleHelper.getLanguages(context)
+                val currentAppLanguage = Preferences.get(Preferences.appLanguageKey, "")
 
                 ListPreference(
                     title = stringResource(R.string.app_language),
                     preferenceKey = Preferences.appLanguageKey,
                     defaultValue = "",
-                    entries = appLanguages.map { it.name },
+                    entries = appLanguages.map {
+                        LanguageNames.displayName(
+                            it.code,
+                            currentAppLanguage.takeIf { language -> language.isNotEmpty() },
+                            it.name
+                        )
+                    },
                     values = appLanguages.map { it.code }
                 ) {
                     Handler(Looper.getMainLooper()).postDelayed({
